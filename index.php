@@ -8,12 +8,12 @@ session_start();
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
 	<script type="text/javascript" src="calendar.js"></script>
-	<title>Kino Wrocław</title>
+	<title>Takie Kino</title>
 </head>
 
 <body>
 
-<font size="8">Kino</font><br/><br/>
+<font size="8">Takie Kino</font><br/><br/>
 	<title1></title1>
 <form action="index.php" method="post">
 <script>DateInput('wybrana_data', true, 'YYYY/MON/DD')</script>
@@ -25,16 +25,12 @@ session_start();
 if($_POST){$DZIEN = $_POST['wybrana_data'];}
 else{$DZIEN="2017-06-18";
 }
-//$DZIEN="2017-06-18";
-
-//date("Y-m-d"); $_POST['nasza_nazwa'];
-
-	$polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
+polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
 	if($polaczenie->connect_errno!=0){	
 		echo "Error: ".$polaczenie->connect_errno." Brak połączenia z bazą filmów";
 	}else{
 	
-		$sql="SELECT * FROM seanse WHERE dzien='$DZIEN' ORDER BY id_film";
+		$sql="SELECT * FROM seanse WHERE dzien='$DZIEN' ORDER BY id_film, godzina";
 		if($rezultat=@$polaczenie->query($sql)){
 			$ile_filmow = $rezultat->num_rows;
 			if($ile_filmow=0){

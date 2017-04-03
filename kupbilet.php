@@ -7,16 +7,17 @@ session_start();
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-	<title>Kup bilet - Kino Wrocław</title>
+	<title>Kup bilet - Takie Kino</title>
 </head>
 
 <body>
 
 <?php
+
 	$id_seans = $_GET['paczka'];
 	$polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
 	if($polaczenie->connect_errno!=0){	
-		echo "Error: ".$polaczenie->connect_errno." Brak połączenia z bazą filmów";
+		echo "Error: ".$polaczenie->connect_errno."Brak połączenia z bazą rezerwacji Kina";
 	}else{
 		$sql="SELECT * FROM seanse WHERE id_seans='$id_seans'";
 		if($rezultat=@$polaczenie->query($sql)){
@@ -34,20 +35,47 @@ session_start();
 				echo "Godzina senasu: ".$wynik['godzina']."<br/>";
 				echo "Sala: ".$wynik['id_sala']."<br/>";
 				echo "WYBIERZ MIEJSCE:";
-				/*?>
-				<form>
-				<select multiple="multiple" id="selectElem" name="selectElem[]">
-				<option value="ham">Ham</option>
-				<option value="cheese">Cheese</option>
-				<option value="hamcheese">Ham and Cheese</option>
-				</select>
+				$id_sala=$wynik['id_sala'];
+				$sqlSALA="SELECT * FROM sale WHERE id_sala='$id_sala'";
+				$rezultatSALA=@$polaczenie->query($sqlSALA);
+				$SALA = $rezultatSALA->fetch_assoc();
+				?>
+				<form action="" method="post">
+				Miejsce: <br/><input type="text" name="miejsce"/><br/>
+				<input type="submit" name="submit" value='Wyślij'>
 				</form>
-				<?php*/
+				
+				<?php
+				if($_POST){
+					$miejsce=$_POST['miejsce'];
+				}
+				/*trzeba jeszcze posprawdzac czy miejsce miesci sie w granicach 
+				*/
+				if (isset($_POST['submit'])){
+					$id_seans=$wynik['id_seans'];
+					$sqlREZ="SELECT * FROM rezerwacje WHERE id_seans='$id_seans' AND miejsce='$miejsce'";
+					if($rezultatREZ=@$polaczenie->query($sqlREZ)){
+						//if(($miejsce>=1)&&($miejsce<=)){
+						if($rezultatREZ->num_rows>0){
+							echo 'To miejsce niestety jest już zajęte';
+						}else{
+							$sqlZAREZERWUJ="INSERT INTO rezerwacje VALUES(NULL,$id_seans,$miejsce)";
+							if($rezultatREZ=@$polaczenie->query($sqlZAREZERWUJ)){
+								echo "REZERWACJA PRZEBIEGLA POMYSLNIE";
+							}else{
+								echo "BŁĄD REZERWACJI";
+							}
+						}
+					}else{
+							echo 'Error Nie ma takiego filmu';
+					}
+				}
 			}
 		$rezultat->free_result();
 		}
 		$polaczenie->close();
 	}
+
 ?>
 </body>
 </html>
