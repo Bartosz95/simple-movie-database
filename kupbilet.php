@@ -28,58 +28,65 @@ session_start();
 				$wynik= $rezultat->fetch_assoc();
 				$id_film=$wynik['id_film'];
 				$sqlFILM="SELECT * FROM filmy WHERE id_film='$id_film'";
-				$rezultatFILM=@$polaczenie->query($sqlFILM);
-				$FILM= $rezultatFILM->fetch_assoc();
-				echo "REZERWACJA BILETU NA SEANS: ".$FILM['tytul']."<br/>";
-				echo "Data seansu: ".$wynik['dzien']."<br/>";
-				echo "Godzina senasu: ".$wynik['godzina']."<br/>";
-				echo "Sala: ".$wynik['id_sala']."<br/>";
-				echo "WYBIERZ MIEJSCE:";
-				$id_sala=$wynik['id_sala'];
-				$sqlSALA="SELECT * FROM sale WHERE id_sala='$id_sala'";
-				$rezultatSALA=@$polaczenie->query($sqlSALA);
-				$SALA = $rezultatSALA->fetch_assoc();
-				$ilosc_miejsc=$SALA['ilosc_miejsc'];
-				$id_seans=$wynik['id_seans'];
-				
-				?>
-				<form action="" method="post">
-				Miejsce: <br/><input type="text" name="miejsce"/><br/>
-				<input type="submit" name="submit" value='Zarezerwuj'>
-				</form>
-				<form action="index.php" >
-				<input type="submit" value='Powrót do strony domowej'>
-				</form>
-				<?php
-				if($_POST){
-					$miejsce=$_POST['miejsce'];
-				}
-				if (isset($_POST['submit'])){
-					$sqlREZ="SELECT * FROM rezerwacje WHERE id_seans='$id_seans' AND miejsce='$miejsce'";
-					if($rezultatREZ=@$polaczenie->query($sqlREZ)){
-						if(($miejsce>=1)&&($miejsce<=$ilosc_miejsc)){
-							if($rezultatREZ->num_rows>0){
-								echo 'To miejsce niestety jest już zajęte';
-							}else{
-								$_SESSION['miejsce']=$miejsce;
-								$sqlZAREZERWUJ="INSERT INTO rezerwacje VALUES(NULL,$id_seans,$miejsce)";
-								if($rezultatREZ=@$polaczenie->query($sqlZAREZERWUJ)){
-									echo "REZERWACJA PRZEBIEGLA POMYŚLNIE";									
+				if($rezultatFILM=@$polaczenie->query($sqlFILM)){
+					$FILM= $rezultatFILM->fetch_assoc();
+					echo "REZERWACJA BILETU NA SEANS: ".$FILM['tytul']."<br/>";
+					echo "Data seansu: ".$wynik['dzien']."<br/>";
+					echo "Godzina senasu: ".$wynik['godzina']."<br/>";
+					echo "Sala: ".$wynik['id_sala']."<br/>";
+					echo "WYBIERZ MIEJSCE:";
+					$id_sala=$wynik['id_sala'];
+					$sqlSALA="SELECT * FROM sale WHERE id_sala='$id_sala'";
+					$rezultatSALA=@$polaczenie->query($sqlSALA);
+					$SALA = $rezultatSALA->fetch_assoc();
+					$ilosc_miejsc=$SALA['ilosc_miejsc'];
+					$id_seans=$wynik['id_seans'];
+					
+					?>
+					<form action="" method="post">
+					Miejsce: <br/><input type="text" name="miejsce"/><br/>
+					E-mail: <br/><input type="text" name="email"/><br/>
+					<input type="submit" name="submit" value='Zarezerwuj'>
+					</form>
+					<form action="index.php" >
+					<input type="submit" value='Powrót do strony domowej'>
+					</form>
+					<?php
+					if($_POST){
+						$miejsce=$_POST['miejsce'];
+						$email=$_POST['email'];
+					}
+					if(isset($_POST['submit'])){
+						
+						$sqlREZ="SELECT * FROM rezerwacje WHERE id_seans='$id_seans' AND miejsce='$miejsce'";
+						if($rezultatREZ=@$polaczenie->query($sqlREZ)){
+							if(($miejsce>=1)&&($miejsce<=$ilosc_miejsc)){
+								if($rezultatREZ->num_rows>0){
+									echo 'To miejsce niestety jest już zajęte';
 								}else{
-									echo "BŁĄD REZERWACJI";
+									$_SESSION['miejsce']=$miejsce;
+									$email=$_POST['email'];
+									$sqlZAREZERWUJ="INSERT INTO rezerwacje VALUES(NULL,$id_seans,$miejsce,'$email')";
+									if($rezultatZAREZERWUJ=@$polaczenie->query($sqlZAREZERWUJ)){
+										echo "REZERWACJA PRZEBIEGLA POMYŚLNIE";
+										//$rezultatZAREZERWUJ->free_result();
+									}else{
+										echo "BŁĄD REZERWACJI";
+									}
 								}
+							}else{
+								echo "Nie ma takiego miejca";
 							}
+							$rezultatREZ->free_result();
 						}else{
-							echo "Nie ma takiego miejca";
-						}
-					}else{
 							echo 'Error Nie ma takiego filmu';
+						}
 					}
 				}
 			}
 		$rezultat->free_result();
 		}
-		$polaczenie->close();
+	$polaczenie->close();
 	}
 
 ?>

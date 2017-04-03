@@ -67,6 +67,6 @@ $polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
 	$polaczenie->close();
 	}
 ?>
+</br></br><a href="logowanie.php">Panel Administratora</a>
 </body>
-<a href="zaloguj.php">Panel Administratora</a>
 </html>
