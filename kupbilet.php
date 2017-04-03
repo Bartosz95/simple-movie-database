@@ -39,32 +39,38 @@ session_start();
 				$sqlSALA="SELECT * FROM sale WHERE id_sala='$id_sala'";
 				$rezultatSALA=@$polaczenie->query($sqlSALA);
 				$SALA = $rezultatSALA->fetch_assoc();
+				$ilosc_miejsc=$SALA['ilosc_miejsc'];
+				$id_seans=$wynik['id_seans'];
+				
 				?>
 				<form action="" method="post">
 				Miejsce: <br/><input type="text" name="miejsce"/><br/>
-				<input type="submit" name="submit" value='Wyślij'>
+				<input type="submit" name="submit" value='Zarezerwuj'>
 				</form>
-				
+				<form action="index.php" >
+				<input type="submit" value='Powrót do strony domowej'>
+				</form>
 				<?php
 				if($_POST){
 					$miejsce=$_POST['miejsce'];
 				}
-				/*trzeba jeszcze posprawdzac czy miejsce miesci sie w granicach 
-				*/
 				if (isset($_POST['submit'])){
-					$id_seans=$wynik['id_seans'];
 					$sqlREZ="SELECT * FROM rezerwacje WHERE id_seans='$id_seans' AND miejsce='$miejsce'";
 					if($rezultatREZ=@$polaczenie->query($sqlREZ)){
-						//if(($miejsce>=1)&&($miejsce<=)){
-						if($rezultatREZ->num_rows>0){
-							echo 'To miejsce niestety jest już zajęte';
-						}else{
-							$sqlZAREZERWUJ="INSERT INTO rezerwacje VALUES(NULL,$id_seans,$miejsce)";
-							if($rezultatREZ=@$polaczenie->query($sqlZAREZERWUJ)){
-								echo "REZERWACJA PRZEBIEGLA POMYSLNIE";
+						if(($miejsce>=1)&&($miejsce<=$ilosc_miejsc)){
+							if($rezultatREZ->num_rows>0){
+								echo 'To miejsce niestety jest już zajęte';
 							}else{
-								echo "BŁĄD REZERWACJI";
+								$_SESSION['miejsce']=$miejsce;
+								$sqlZAREZERWUJ="INSERT INTO rezerwacje VALUES(NULL,$id_seans,$miejsce)";
+								if($rezultatREZ=@$polaczenie->query($sqlZAREZERWUJ)){
+									echo "REZERWACJA PRZEBIEGLA POMYŚLNIE";									
+								}else{
+									echo "BŁĄD REZERWACJI";
+								}
 							}
+						}else{
+							echo "Nie ma takiego miejca";
 						}
 					}else{
 							echo 'Error Nie ma takiego filmu';
