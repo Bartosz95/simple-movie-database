@@ -53,9 +53,9 @@ $polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
 								echo '<br/>'.'<br/><span style="font-weight: bold">'.$FILM['tytul'].'</span><br/>'.$FILM['gatunek'].' | '.$FILM['czas trwania'].' minuty '.'<br/> Reżyser: '.$FILM['rezyser'].'<br/>';
 								$godzina=$tablica[$i]['godzina'];
 								$informacja=$tablica[$i]['id_seans'];
-								echo 'Dostępne godziny:   '.'<a href = "kupbilet.php?paczka='.$informacja.'">'.$tablica[$i]['godzina'].'</a>'.'    ';
+								echo 'Dostępne godziny:   '.'<a href = "wybierz_ilosc.php?paczka='.$informacja.'">'.$tablica[$i]['godzina'].'</a>';
 							}else{
-								echo '<a href = "kupbilet.php?paczka='.$informacja.'">'.$tablica[$i]['godzina'].' </a>';
+								echo '    '.'<a href = "wybierz_ilosc.php?paczka='.$informacja.'">'.$tablica[$i]['godzina'].' </a>';
 						}
 					}				
 				}				
