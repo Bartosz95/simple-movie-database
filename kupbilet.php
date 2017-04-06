@@ -28,6 +28,13 @@ session_start();
 				}
 				$rezultatREZ->free_result();
 			}
+			//poprawnosc maila
+			$email=$_POST['email'];
+			$emailB=filter_var($email,FILTER_SANITIZE_EMAIL);
+			if((filter_var($emailB,FILTER_VALIDATE_EMAIL)==false)||($emailB!=$email)){
+				$rezerwacja_OK=false;
+				$_SESSION['e_email']="Podaj poprawny adres e-mail";
+			}
 			if($rezerwacja_OK==true){
 				for($i=0;$i<$ilosc_miejsc_rezerwowanych;$i=$i+1){
 					$miejsce=$_POST['miejsce'][$i];
@@ -43,6 +50,22 @@ session_start();
 				$_SESSION['e_blad']= "</br>"."PROSZĘ WYPEŁNIĆ POLA ZGODNIE Z ZALECENIAMI"."</br>";
 			}
 		$polaczenie->close();
+		}
+	}
+	if(isset($_POST['powrot'])){
+		$polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
+		if($polaczenie->connect_errno!=0){	
+			echo "Error: ".$polaczenie->connect_errno."Brak połączenia z bazą rezerwacji Kina";
+		}else{
+			$id_seans=$_SESSION['id_seans'];
+			$nowa_wartosc=$_SESSION['ilosc_miejsc_wolnych']+$_SESSION['ilosc_miejsc_do_rezerwacji'];
+			$UPDATE_MIEJSC="UPDATE seanse SET wolne_miejsca='$nowa_wartosc' WHERE id_seans='$id_seans'";
+			if(($rezultat=@$polaczenie->query($UPDATE_MIEJSC))!=true){
+					$wszystko_OK=false;
+					$_SESSION['e_up_miejsc']="Nie udało się zarezerwować miejsc";
+			}else{
+				header("Location: index.php");
+			}
 		}
 	}
 ?>
@@ -76,8 +99,7 @@ session_start();
 	for($i=0;$i<$ilosc_miejsc_rezerwowanych;$i=$i+1){
 		?>
 		Miejsce <?php echo $i+1;?>: <input type="text" name="miejsce[]" /><br/>
-		<?php
-		
+		<?php	
 		if(isset($_SESSION['e_wielkosc'][$i])){
 			echo '<div class="error">'.$_SESSION['e_wielkosc'][$i].'</div>';
 			unset($_SESSION['e_wielkosc'][$i]);
@@ -86,10 +108,15 @@ session_start();
 			echo $_SESSION['e_zajete'][$i];
 			unset($_SESSION['e_zajete'][$i]);
 		}*/
-
 	}
 	?>
 	E-mail: <br/><input type="text" name="email"/><br/>
+	<?php
+	if(isset($_SESSION['e_email'])){
+			echo '<div class="error">'.$_SESSION['e_email'].'</div>';
+			unset($_SESSION['e_email']);
+	}
+	?>
 	<input type="submit" name="rezerwuj" value='Rezerwuj'>
 	</form>
 	<?php
@@ -97,6 +124,11 @@ session_start();
 			echo '<div class="error">'.$_SESSION['e_blad'].'</div>';
 			unset($_SESSION['e_blad']);
 	}
+	?>
+	<form method="POST" >
+	<input type="submit" name="powrot" value='Powrót do strony domowej'>
+	</form>
+	<?php
 ?>
 </body>
 </html>
