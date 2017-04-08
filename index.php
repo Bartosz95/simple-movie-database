@@ -28,6 +28,7 @@ else{$DZIEN="2017-06-18";
 $polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
 	if($polaczenie->connect_errno!=0){	
 		echo "Error: ".$polaczenie->connect_errno." Brak połączenia z bazą filmów";
+		exit();
 	}else{
 	
 		$sql="SELECT * FROM seanse WHERE dzien='$DZIEN' ORDER BY id_film, godzina";
