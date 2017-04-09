@@ -121,15 +121,15 @@
 		</form>
 		<?php
 		if(isset($_POST['dodaj_seans'])){
-			if(isset($_GET['wybierz_godzine'])){
-				unset($_GET['wybierz_godzine']);
+			if(isset($_POST['wybierz_godzine'])){
+				unset($_POST['wybierz_godzine']);
 			}
 			$sqlFILM="SELECT * FROM filmy";
 			$sqlSALA="SELECT * FROM sale";
 			if(($rezultatFILM=@$polaczenie->query($sqlFILM))&&
 				($rezultatSALA=@$polaczenie->query($sqlSALA))){
 				?>
-				<form method="GET" >
+				<form method="POST" >
 				<br/>Wybierz film
 				<select name="film" >
 				<?php
@@ -157,12 +157,12 @@
 				<?php
 			}
 		}
-		if(isset($_GET['wybierz_godzine'])){
-			$_SESSION['sala']=$_GET['sala'];
-			$_SESSION['film']=$_GET['film'];
-			$DATA=$_GET['data'];
-			$SALA=$_GET['sala'];
-			$FILM=$_GET['film'];
+		if(isset($_POST['wybierz_godzine'])){
+			$_SESSION['sala']=$_POST['sala'];
+			$_SESSION['film']=$_POST['film'];
+			$DATA=$_POST['data'];
+			$SALA=$_POST['sala'];
+			$FILM=$_POST['film'];
 			$partDATA = explode('-',$DATA);
 			$data = mktime(1,1,1,$partDATA[1],$partDATA[2],$partDATA[0]);
 			$DATA = date('Y-m-d',$data);
@@ -195,7 +195,7 @@
 				}
 			}
 			?>
-			<form method="GET">
+			<form method="POST">
 			Wybierz Godzinę:
 			<select name="godzina" >
 			<?php
@@ -224,22 +224,17 @@
 			</form>
 			<?php
 		}
-		if(isset($_GET['wyb_godz'])){
+		if(isset($_POST['wyb_godz'])){
 			$data=$_SESSION['data'];
 			$sala=$_SESSION['sala'];
 			$tytul=$_SESSION['tytul'];
 			$czas_trwania=$_SESSION['czas trwania'];
 			$id_film=$_SESSION['id_film'];
-			$godzina = date('H:i',mktime($_GET['godzina'],$_GET['minuta'],00));
+			$godzina = date('H:i',mktime($_POST['godzina'],$_POST['minuta'],00));
 			$_SESSION['godzina']=$godzina;
-			
-			$partCZAS = explode(':',$godzina);//cos tu 
-			$time = mktime($partCZAS[0],$partCZAS[1]+$czas_trwania,$partCZAS[2]);
-			$zakonczenie = date('H:i:s',$time);
-			
+			$zakonczenie = date('H:i',mktime($_POST['godzina']+$_SESSION['czas trwania'],$_POST['minuta'],00));
 			$sqlSEANS = "SELECT * FROM seanse WHERE id_sala='$sala' AND dzien='$data' ORDER BY godzina";
 			$wszystko_OK=true;
-			echo "tu1";
 			if($rezultatSEANS=@$polaczenie->query($sqlSEANS)){
 				if($rezultatSEANS->num_rows>0){
 					while($SEANS = $rezultatSEANS->fetch_assoc()){
@@ -252,6 +247,7 @@
 							$partCZAS = explode(':',$POCZATEK);
 							$time = mktime($partCZAS[0],$partCZAS[1]+$CZAS+30,$partCZAS[2]);
 							$KONIEC = date('H:i:s',$time);
+							echo $godzina."__".$zakonczenie;
 							if(($godzina>$POCZATEK)&&($godzina<$KONIEC)||($zakonczenie>$POCZATEK)&&($zakonczenie<$KONIEC)){
 								$wszystko_OK=false;
 								echo "W jednej sali może trwać tylko jeden seans. Po seansie wymagane jest 30 min przerwy przed startem następnego seansu.<br/>";
@@ -261,17 +257,86 @@
 				}
 			}
 			if($wszystko_OK==true){
-				echo "tu2";
-				$sql="SELECT * FROM seanse WHERE id_sala='$sala'";
+				$sqlSALA="SELECT * FROM sale WHERE id_sala='$sala'";
 				if($rezultatSALA = @$polaczenie->query($sqlSALA)){
 					$SALA = $rezultatSALA->fetch_assoc();
 					$wolne_miejsca=$SALA['ilosc_miejsc'];
 					$sqlINSERT="INSERT INTO seanse VALUES(NULL,'$id_film','$sala','$data','$godzina','$wolne_miejsca')";
 					if($rezultatINSERT = @$polaczenie->query($sqlINSERT)){
 						echo "POPRAWNIE DODANO SEANS</br>";
+						unset($_POST['wyb_godz']);
 					}
 				}
 			}else{
+				$_POST = array('wyb_godz' => null);
+			}
+		}
+		?>
+		<br/>
+		<form method="post">
+		<input type="submit" name="USUN_SENS" value='Usuń seans'>
+		</form>
+		<?php
+		if(isset($_POST['USUN_SENS'])){
+			$sqlSALA="SELECT * FROM sale";
+			if($rezultatSALA=@$polaczenie->query($sqlSALA)){
+				?>
+				<form method="POST">
+				Wybierz date
+				<script>DateInput('data', true, 'YYYY-MON-DD')</script>
+				Wybierz sale
+				<select name="id_sala" >
+				<?php
+				
+				while($SALA=$rezultatSALA->fetch_assoc()){
+					?>
+					<option value="<?php echo $SALA['id_sala'];?>"> <?php echo $SALA['id_sala'];?> </option>
+					<?php
+				}
+				?>
+				</select>
+				<br/><input type="submit" name="wyb_dat" value='Przejdź dalej'>
+				</form>
+				<?php
+				}
+		}
+		if(isset($_POST['wyb_dat'])){
+			$SALA = $_POST['id_sala'];
+			$DATA = $_POST['data'];
+			$partDATA = explode('-',$DATA);
+			$data = mktime(1,1,1,$partDATA[1],$partDATA[2],$partDATA[0]);
+			$DATA = date('Y-m-d',$data);
+			$sqlSEANSE = "SELECT * FROM seanse WHERE id_sala='$SALA' AND dzien='$DATA'"; //
+			if($rezultatSEANSE=@$polaczenie->query($sqlSEANSE)){
+				if($rezultatSEANSE->num_rows>0){
+					?>
+					<form method="POST">
+					<select name = "id_seans" >
+					<?php
+					while($SEANS=$rezultatSEANSE->fetch_assoc()){
+						echo $id_film=$SEANS['id_film'];
+						$sqlFILM="SELECT * FROM filmy WHERE id_film='$id_film'";
+						$rezultatFILM=@$polaczenie->query($sqlFILM);
+						$FILM=$rezultatFILM->fetch_assoc();
+						?>
+						<option value="<?php echo $SEANS['id_seans'];?>"> <?php echo $SEANS['godzina']."-".$FILM['tytul'];?> </option>
+						<?php
+					}
+					?>
+					</select>
+					<input type="submit" name="usun_seans" value='Usuń'>
+					</form>
+					<?php
+				}else{
+					echo "W tym dniu nie ma seansów</br>";
+				}
+			}
+		}
+		if(isset($_POST['usun_seans'])){
+			$id_seans=$_POST['id_seans'];
+			$sqlFILM="DELETE * FROM seanse WHERE id_seans='$id_seans'";
+			if($rezultatFILM=@$polaczenie->query($sqlFILM)){
+				echo "SEANS ZOSTAŁ USUNIETY</br>";echo $id_seans;
 			}
 		}
 	$polaczenie->close();

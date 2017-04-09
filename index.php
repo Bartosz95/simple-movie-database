@@ -56,7 +56,8 @@ $polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
 								$informacja=$tablica[$i]['id_seans'];
 								echo 'Dostępne godziny:   '.'<a href = "wybierz_ilosc.php?paczka='.$informacja.'">'.$tablica[$i]['godzina'].'</a>';
 							}else{
-								echo '    '.'<a href = "wybierz_ilosc.php?paczka='.$informacja.'">'.$tablica[$i]['godzina'].' </a>';
+								echo '    '.'<a href = "wybierz_ilosc.php?paczka='.$informacja.'">'.$tablica[$i]['godzina'].'</a>  ';
+								
 						}
 					}				
 				}				
