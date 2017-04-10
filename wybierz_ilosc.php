@@ -1,35 +1,48 @@
 <?php
 require_once "seanse.php";
 session_start();
+	if(isset($_GET['paczka'])!=true){
+		header("Location: index.php");
+	}
 	if(isset($_POST['ilosc_miejsc_do_rezerwacji'])){
 		$wszystko_OK=true;
 		$ilosc_miejsc_do_rezerwacji=$_POST['ilosc_miejsc_do_rezerwacji'];
 		$id_seans=$_SESSION['id_seans'];
-		echo $id_seans;
 		//czy zawiera się w przedziale
 		if(($ilosc_miejsc_do_rezerwacji<1)||($ilosc_miejsc_do_rezerwacji>$_SESSION['ilosc_miejsc_wolnych'])){
 			$wszystko_OK=false;
 			$_SESSION['e_wielkosc']="Ilość miejsc do rezerwacji musi zawierać się w przedziale od 1 do ".$_SESSION['ilosc_miejsc_wolnych'];
+		}
+		if(is_numeric($_POST['ilosc_miejsc_do_rezerwacji'])==false){
+			$wszystko_OK=false;
+			$_SESSION['e_czy_int']="Ilość miejsc musi być liczbą całkowitą";
 		}
 		if($wszystko_OK==true){
 			$polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
 			if($polaczenie->connect_errno!=0){	
 				echo "Error: ".$polaczenie->connect_errno."Brak połączenia z bazą rezerwacji Kina";
 			}else{
-				$nowa_wartosc=$_SESSION['ilosc_miejsc_wolnych']-$ilosc_miejsc_do_rezerwacji;
-				echo $nowa_wartosc;
+				$nowa_wartosc=$_SESSION['ilosc_miejsc_wolnych']-$_POST['ilosc_miejsc_do_rezerwacji'];
 				$UPDATE_MIEJSC="UPDATE seanse SET wolne_miejsca='$nowa_wartosc' WHERE id_seans='$id_seans'";
-				if(($rezultat=@$polaczenie->query($UPDATE_MIEJSC))!=true){
+				if($rezultat=@$polaczenie->query($UPDATE_MIEJSC)){
+					$_SESSION['ilosc_miejsc_wolnych']=$nowa_wartosc;
+					if(isset($_SESSION['e_wielkosc'])){
+						unset($_SESSION['e_wielkosc']);
+					}
+					if(isset($_SESSION['e_czy_int'])){
+						unset($_SESSION['e_czy_int']);
+					}
+					if(isset($_SESSION['e_up_miejsc'])){
+						unset($_SESSION['e_up_miejsc']);
+					}
+					$_SESSION['ilosc_miejsc_do_rezerwacji']=$_POST['ilosc_miejsc_do_rezerwacji'];
+					$_SESSION['wybrana']=true;
+					header("Location: kupbilet.php");
+				}else{
 					$wszystko_OK=false;
 					$_SESSION['e_up_miejsc']="Nie udało się zarezerwować miejsc";
 				}
 			}
-		}
-		if($wszystko_OK==true){
-			$_SESSION['ilosc_miejsc_do_rezerwacji']=$_POST['ilosc_miejsc_do_rezerwacji'];
-			$dalej="kupbilet.php";
-			header("Location: $dalej");
-			echo "udana walidacja";exit();
 		}
 	}
 ?>
@@ -84,6 +97,11 @@ session_start();
 						echo '<div class="error">'.$_SESSION['e_wielkosc'].'</div>';
 						unset($_SESSION['e_wielkosc']);
 					}
+					if(isset($_SESSION['e_czy_int'])){
+						echo '<div class="error">'.$_SESSION['e_czy_int'].'</div>';
+						unset($_SESSION['e_czy_int']);
+					}
+					
 					?>
 					<input type="submit" name="dalej" value='Przejdz dalej'>
 					</form>

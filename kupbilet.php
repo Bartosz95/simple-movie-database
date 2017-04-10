@@ -1,6 +1,10 @@
 <?php
 require_once "seanse.php";
 session_start();
+if(!isset($_SESSION['wybrana'])){
+		header('Location: wybierz_ilosc.php');
+		exit();
+	}
 	if(isset($_POST['email'])){
 		$polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
 		if($polaczenie->connect_errno!=0){	
@@ -11,15 +15,19 @@ session_start();
 			$ilosc_miejsc_w_sali=$_SESSION['ilosc_miejsc_w_sali'];
 			$id_seans=$_SESSION['id_seans'];
 			for($i=0;$i<$ilosc_miejsc_rezerwowanych;$i=$i+1){
-				$miejsce=$_POST['miejsce'][$i];//gdzieś tu jest błąd w konwersji 
+				$miejsce=$_POST['miejsce'][$i];//gdzieś tu jest błąd w konwersji
+				$_SESSION['miejsce'][$i]=$_POST['miejsce'][$i];
 				$sqlREZ="SELECT * FROM rezerwacje WHERE id_seans='$id_seans' AND miejsce='$miejsce'";
 				if($rezultatREZ=@$polaczenie->query($sqlREZ)){
-					if(($miejsce<1)||($miejsce>$ilosc_miejsc_w_sali)){
-						$_SESSION['e_wielkosc'][$i]="Sala ".$_SESSION['id_sala']." nie posiada miejsca ".$miejsce;
+					if(is_numeric($miejsce)==false){
+						$_SESSION['e_czy_int'][$i]="Miejsc musi być liczbą całkowitą";
+						$wszystko_OK=false;
+					}
+					elseif(($miejsce<1)||($miejsce>$ilosc_miejsc_w_sali)){
+						$_SESSION['e_wielkosc'][$i]="Sala ".$_SESSION['id_sala']." nie posiada miejsca ".$miejsce."<br/>Miejsce o największym numerze to nr. ".$ilosc_miejsc_w_sali;
 						$rezerwacja_OK=false;
 					}
-					echo $rezultatREZ->num_rows;
-					if(($rezultatREZ->num_rows)>0){
+					elseif(($rezultatREZ->num_rows)>0){
 						$_SESSION['e_zajete'][$i]="Miejsce".$miejsce." niestety jest już zajęte";
 						$rezerwacja_OK=false;
 					}
@@ -41,7 +49,15 @@ session_start();
 					$email=$_POST['email'];
 					$sqlZAREZERWUJ="INSERT INTO rezerwacje VALUES(NULL,$id_seans,$miejsce,'$email')";
 					if($rezultatZAREZERWUJ=@$polaczenie->query($sqlZAREZERWUJ)){
-						echo "</br>"."REZERWACJA MIEJSCA ".$_SESSION['miejsce'][$i]." PRZEBIEGLA POMYŚLNIE";
+						unset($_SESSION['wybrana']);
+						$_SESSION['bilet']=true;
+						for($i=0;$i<$ilosc_miejsc_rezerwowanych;$i=$i+1){
+							unset($_SESSION['e_wielkosc'][$i]);
+							unset($_SESSION['e_czy_int'][$i]);
+							unset($_SESSION['e_zajete'][$i]);
+						}
+						header("Location: bilet.php");
+						echo "</br>"."REZERWACJA MIEJSCE ".$_POST['miejsce'][$i]." PRZEBIEGLA POMYŚLNIE<br/>";
 					}else{
 						echo "NIE UDAŁO SIĘ ZAREZERWOWAĆ MIEJSCA ".$_SESSION['miejsce'][$i]." !</br>";
 					}
@@ -60,11 +76,17 @@ session_start();
 			$id_seans=$_SESSION['id_seans'];
 			$nowa_wartosc=$_SESSION['ilosc_miejsc_wolnych']+$_SESSION['ilosc_miejsc_do_rezerwacji'];
 			$UPDATE_MIEJSC="UPDATE seanse SET wolne_miejsca='$nowa_wartosc' WHERE id_seans='$id_seans'";
-			if(($rezultat=@$polaczenie->query($UPDATE_MIEJSC))!=true){
-					$wszystko_OK=false;
-					$_SESSION['e_up_miejsc']="Nie udało się zarezerwować miejsc";
-			}else{
+			if($rezultat=@$polaczenie->query($UPDATE_MIEJSC)){
+				unset($_SESSION['wybrana']);
+				$ilosc_miejsc_rezerwowanych=$_SESSION['ilosc_miejsc_do_rezerwacji'];
+				for($i=0;$i<$ilosc_miejsc_rezerwowanych;$i=$i+1){
+					unset($_SESSION['e_wielkosc'][$i]);
+					unset($_SESSION['e_czy_int'][$i]);
+					unset($_SESSION['e_zajete'][$i]);
+				}
 				header("Location: index.php");
+			}else{
+				$_SESSION['e_up_miejsc']="Błąd połączenia z bazą. Skontaktuj się z Administratorem.";
 			}
 		}
 	}
@@ -104,10 +126,14 @@ session_start();
 			echo '<div class="error">'.$_SESSION['e_wielkosc'][$i].'</div>';
 			unset($_SESSION['e_wielkosc'][$i]);
 		}
-	/*	if(isset($_SESSION['e_zajete'][$i])){
-			echo $_SESSION['e_zajete'][$i];
+		if(isset($_SESSION['e_czy_int'][$i])){
+			echo '<div class="error">'.$_SESSION['e_czy_int'][$i].'</div>';
+			unset($_SESSION['e_czy_int'][$i]);
+		}
+		if(isset($_SESSION['e_zajete'][$i])){
+			'<div class="error">'.$_SESSION['e_zajete'][$i].'</div>';
 			unset($_SESSION['e_zajete'][$i]);
-		}*/
+		}
 	}
 	?>
 	E-mail: <br/><input type="text" name="email"/><br/>

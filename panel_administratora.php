@@ -74,7 +74,7 @@
 		}
 		?>
 		</br>
-		<form  method="post">
+		<form  method="POST">
 		<input type="submit" name="usun_film" value='Usuń film'>
 		</form>
 		<?php
@@ -82,33 +82,39 @@
 			$sql="SELECT * FROM filmy";
 			if($rezultat=@$polaczenie->query($sql)){
 				echo '</br>'."Lista filmów obecnych w bazie:".'</br>';
-				while($wynik= $rezultat->fetch_assoc()){
-					echo $wynik['tytul'].'</br>';
+				?>
+				<form  method="POST">
+				<select name="id_film" >
+				<?php
+				while($FILM = $rezultat->fetch_assoc()){
+					?>
+					<option value="<?php echo $FILM['id_film'];?>"> <?php echo $FILM['tytul'];?> </option>
+					<?php
 				}
+				?>
+				</select>
+				<input type="submit" name="USUN_FILM" value='Usuń'>
+				</form>
+				<?php
 			}
-			?>
-			<br/>
-			Podaj nazwę filmu do usunięcia.
-			<form method="post">
-			Tutuł: <input type="text" name="tytul"/><br/>
-			<input type="submit" name="USUN_FILM" value='Usuń'>
-			</form>
-			<?php
 		}
 
 		if(isset($_POST['USUN_FILM'])){
-			$tytul=$_POST['tytul'];
-			$sql="SELECT * FROM filmy WHERE tytul='$tytul'";
-			if($rezultat=@$polaczenie->query($sql)){
-				$ilosc = $rezultat->num_rows;
-				if($ilosc<1){
-					echo "Film o podanym tytule istenieje już w badzie";
+			$id_film=$_POST['id_film'];
+			$sqlSEANS="SELECT * FROM seanse WHERE id_film='$id_film'";
+			$sqlFILM="SELECT * FROM filmy WHERE tytul='$id_film'";
+			if(($rezultatSEANS=@$polaczenie->query($sqlSEANS))&&($rezultatFILM=@$polaczenie->query($sqlFILM))){
+				if($rezultatSEANS->num_rows>0){
+					echo "Nie można usunąć filmu ponieważ jest on na seansach:";
+					while($SEANS=$rezultatSEANS->fetch_assoc()){
+						echo "<br/>Dzień: ".$SEANS['dzien']." | Godzina: ".$SEANS['godzina']." | Sala: ".$SEANS['id_sala'];
+					}
 				}else{
-					$sqlDELETE="DELETE FROM filmy WHERE tytul='$tytul'";
+					$sqlDELETE="DELETE FROM filmy WHERE id_film='$id_film'";
 					if($rezultatDELETE=@$polaczenie->query($sqlDELETE)){
 						echo "FILM USUNIĘTY POMYŚLNIE";
 					}else{
-						echo "Nie udało się usunąć filmu";
+						echo "Nie udało się usunąć filmu. Błąd połączenia z bazą lub zły tytuł filmu.";
 					}
 				}
 			}
@@ -334,9 +340,20 @@
 		}
 		if(isset($_POST['usun_seans'])){
 			$id_seans=$_POST['id_seans'];
-			$sqlFILM="DELETE * FROM seanse WHERE id_seans='$id_seans'";
-			if($rezultatFILM=@$polaczenie->query($sqlFILM)){
-				echo "SEANS ZOSTAŁ USUNIETY</br>";echo $id_seans;
+			$sqlREZERWACJE="SELECT * FROM rezerwacje WHERE id_seans='$id_seans'";
+			if($rezultatREZERWACJE=@$polaczenie->query($sqlREZERWACJE)){
+				if($rezultatREZERWACJE->num_rows>0){
+					echo "Nie można usunąć seansu ponieważ zarezerwowano na niego bilety.<br/> E-mail'e osób które zarezerwowały bilety to:";
+					while($REZERWACJA=$rezultatREZERWACJE->fetch_assoc()){
+						echo "<br/>E-mail: ".$REZERWACJA['email'];
+					}
+				}else{
+					$sqlFILM="DELETE * FROM seanse WHERE id_seans='$id_seans'";
+					if($rezultatFILM=@$polaczenie->query($sqlFILM)){
+						$sqlFILM="DELETE * FROM seanse WHERE id_seans='$id_seans'";
+						echo "SEANS ZOSTAŁ USUNIETY</br>";
+					}
+				}
 			}
 		}
 	$polaczenie->close();
