@@ -63,11 +63,28 @@
 				if($ilosc>0){
 					echo "Film o podanym tytule istenieje już w badzie";
 				}else{
-					$sqlINSERT="INSERT INTO filmy VALUES(NULL,'$tytul','$czas_trwania','$gatunek','$rezyser','$rodzaj')";
-					if($rezultatINSERT=@$polaczenie->query($sqlINSERT)){
-						echo "FILM DODANY POMYŚLNIE";
+					if($_POST['tytul']==""){
+						echo "Tytul filmu nie może być pusty";
+					}elseif(is_numeric($_POST['czas_trwania'])==false){
+						echo "Czas filmu musi być podany w minutach i być liczbą całkowitą";
+					}elseif($_POST['czas_trwania']<=0){
+						echo "Czas fimu musi być dodatni i różny od zera";
 					}else{
-						echo "Nie udało się dodać filmu";
+						if($_POST['gatunek']==""){
+							$gatunek="Brak informacji";
+						}
+						if($_POST['rezyser']==""){
+							$rezyser="Brak informacji";
+						}
+						if($_POST['rodzaj']==""){
+							$rodzaj="Brak informacji";
+						}
+						$sqlINSERT="INSERT INTO filmy VALUES(NULL,'$tytul','$czas_trwania','$gatunek','$rezyser','$rodzaj')";
+						if($rezultatINSERT=@$polaczenie->query($sqlINSERT)){
+							echo "FILM DODANY POMYŚLNIE";
+						}else{
+							echo "Nie udało się dodać filmu";
+						}
 					}
 				}
 			}
@@ -348,9 +365,8 @@
 						echo "<br/>E-mail: ".$REZERWACJA['email'];
 					}
 				}else{
-					$sqlFILM="DELETE * FROM seanse WHERE id_seans='$id_seans'";
+					$sqlFILM="DELETE FROM seanse WHERE id_seans='$id_seans'";
 					if($rezultatFILM=@$polaczenie->query($sqlFILM)){
-						$sqlFILM="DELETE * FROM seanse WHERE id_seans='$id_seans'";
 						echo "SEANS ZOSTAŁ USUNIETY</br>";
 					}
 				}

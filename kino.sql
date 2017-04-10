@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Czas generowania: 10 Kwi 2017, 21:20
+-- Czas generowania: 10 Kwi 2017, 21:58
 -- Wersja serwera: 10.1.21-MariaDB
 -- Wersja PHP: 5.6.30
 
@@ -175,7 +175,7 @@ ALTER TABLE `seanse`
 -- AUTO_INCREMENT dla tabeli `filmy`
 --
 ALTER TABLE `filmy`
-  MODIFY `id_film` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_film` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 --
 -- AUTO_INCREMENT dla tabeli `hasla`
 --
@@ -195,7 +195,7 @@ ALTER TABLE `sale`
 -- AUTO_INCREMENT dla tabeli `seanse`
 --
 ALTER TABLE `seanse`
-  MODIFY `id_seans` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id_seans` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
