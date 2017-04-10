@@ -14,14 +14,12 @@
 </head>
 
 <body>
-	Jeżeli jesteś administratorem zaloguj się.
+	Podaj hasło
 	<form action="zaloguj.php" method="post">
-	E-mail: <br/><input type="text" name="email"/><br/>
-	Hasło: <br/><input type="password" name="haslo"/><br/>
+	Hasło: <input type="password" name="haslo"/><br/>
 	<input type="submit" value="Zaloguj się"/>
 	</form>
 	
-	Jeżeli nie wróć do strony domowej.
 	</form>
 	<form action="index.php" >
 	<input type="submit" value='Powrót do strony domowej'>

@@ -17,7 +17,7 @@
 
 <body>
 <?php
-	echo"<p>Witaj ".$_SESSION['email'].'     [<a href="logout.php">Wyloguj się</a>]</p>';
+	echo"<p>Witaj w Panelu Administratora<br/>".'     [<a href="logout.php">Wyloguj się</a>]</p>';
 	$polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
 	if($polaczenie->connect_errno!=0){	
 			echo "Error: ".$polaczenie->connect_errno."Brak połączenia z bazą rezerwacji Kina";
