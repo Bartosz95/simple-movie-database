@@ -6,23 +6,20 @@ session_start();
 <html lang="pl">
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
 	<script type="text/javascript" src="calendar.js"></script>
 	<title>Takie Kino</title>
-	<link rel="stylesheet" type="text/css" href="css/styles.css" />
 </head>
 
 <body>
 
-    <header>
-    <h1>Takie Kino</h1>
-    </header>
-
+<font size="8">Takie Kino</font><br/><br/>
+	<title1></title1>
 <form action="index.php" method="post">
 <script>DateInput('wybrana_data', true, 'YYYY/MON/DD')</script>
 <input type="submit" value='Zmień datę'/>
 </form>
-<ul>
+
 <?php
 
 if($_POST){$DZIEN = $_POST['wybrana_data'];}
@@ -72,7 +69,6 @@ $polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
 	$polaczenie->close();
 	}
 ?>
-</ul>
 </br></br><a href="logowanie.php">Panel Administratora</a>
 </body>
 </html>
