@@ -1,6 +1,6 @@
 <?php
-$host = "localhost";
+$host = "dynak.net";
 $db_user = "root";
-$db_password = "";
+$db_password = "nexo-root";
 $db_name="kino";
 ?>

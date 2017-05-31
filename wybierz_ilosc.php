@@ -19,12 +19,20 @@ session_start();
 		}
 		if($wszystko_OK==true){
 			$polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
-			if($polaczenie->connect_errno!=0){	
+			if($polaczenie->connect_errno!=0){
 				echo "Error: ".$polaczenie->connect_errno."Brak połączenia z bazą rezerwacji Kina";
 			}else{
 				$nowa_wartosc=$_SESSION['ilosc_miejsc_wolnych']-$_POST['ilosc_miejsc_do_rezerwacji'];
+                
 				$UPDATE_MIEJSC="UPDATE seanse SET wolne_miejsca='$nowa_wartosc' WHERE id_seans='$id_seans'";
-				if($rezultat=@$polaczenie->query($UPDATE_MIEJSC)){
+
+                //blokada przed dostepem do zapisu przez wiecej niz jednego uzytkownika
+                $DB_LOCK="LOCK TABLES seanse WRITE";
+                while (!($rezultat=@$polaczenie->query($DB_LOCK))){
+                    time_nanosleep(0,100000);
+                }
+                
+                if($rezultat=@$polaczenie->query($UPDATE_MIEJSC)){
 					$_SESSION['ilosc_miejsc_wolnych']=$nowa_wartosc;
 					if(isset($_SESSION['e_wielkosc'])){
 						unset($_SESSION['e_wielkosc']);
@@ -42,6 +50,10 @@ session_start();
 					$wszystko_OK=false;
 					$_SESSION['e_up_miejsc']="Nie udało się zarezerwować miejsc";
 				}
+
+                //odblokowanie
+                $DB_UNLOCK="UNLOCK TABLES";
+                $rezultat=@$polaczenie->query($DB_UNLOCK);
 			}
 		}
 	}
@@ -52,15 +64,16 @@ session_start();
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
 	<title>Kup bilet - Takie Kino</title>
+	<link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
-
+<section>
 <?php
 
 	$id_seans = $_GET['paczka'];
 	$polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
-	if($polaczenie->connect_errno!=0){	
+	if($polaczenie->connect_errno!=0){
 		echo "Error: ".$polaczenie->connect_errno."Brak połączenia z bazą rezerwacji Kina";
 	}else{
 		$sql="SELECT * FROM seanse WHERE id_seans='$id_seans'";
@@ -101,13 +114,16 @@ session_start();
 						echo '<div class="error">'.$_SESSION['e_czy_int'].'</div>';
 						unset($_SESSION['e_czy_int']);
 					}
-					
+
 					?>
-					<input type="submit" name="dalej" value='Przejdz dalej'>
-					</form>
-					<form action="index.php" >
-					<input type="submit" value='Powrót do strony domowej'>
-					</form>
+<?php
+                    echo "<br/>";
+                    echo "<input type=\"submit\" name=\"dalej\" value='Przejdz dalej'>";
+                    echo "</form>";
+					echo "<form action=\"index.php\" >";
+                    echo "<input type=\"submit\" value='Powrót do strony domowej'>";
+					echo "</form>";
+?>
 					<?php
 					if(isset($_SESSION['e_up_miejsc'])){
 						echo '<div class="error">'.$_SESSION['e_up_miejsc'].'</div>';
@@ -121,5 +137,6 @@ session_start();
 	}
 
 ?>
+</section>
 </body>
 </html>

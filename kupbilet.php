@@ -1,30 +1,33 @@
 <?php
 require_once "seanse.php";
 session_start();
-if(!isset($_SESSION['wybrana'])){
-		header('Location: wybierz_ilosc.php');
-		exit();
-	}
-	if(isset($_POST['email'])){
-		$polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
-		if($polaczenie->connect_errno!=0){	
-			echo "Error: ".$polaczenie->connect_errno."Brak połączenia z bazą rezerwacji Kina";
-		}else{
-			$rezerwacja_OK=true;
-			$ilosc_miejsc_rezerwowanych=$_SESSION['ilosc_miejsc_do_rezerwacji'];
-			$ilosc_miejsc_w_sali=$_SESSION['ilosc_miejsc_w_sali'];
-			$id_seans=$_SESSION['id_seans'];
-			for($i=0;$i<$ilosc_miejsc_rezerwowanych;$i=$i+1){
-				$miejsce=$_POST['miejsce'][$i];//gdzieś tu jest błąd w konwersji
-				$_SESSION['miejsce'][$i]=$_POST['miejsce'][$i];
-				$sqlREZ="SELECT * FROM rezerwacje WHERE id_seans='$id_seans' AND miejsce='$miejsce'";
-				if($rezultatREZ=@$polaczenie->query($sqlREZ)){
-					if(is_numeric($miejsce)==false){
-						$_SESSION['e_czy_int'][$i]="Miejsc musi być liczbą całkowitą";
-						$wszystko_OK=false;
-					}
-					elseif(($miejsce<1)||($miejsce>$ilosc_miejsc_w_sali)){
-						$_SESSION['e_wielkosc'][$i]="Sala ".$_SESSION['id_sala']." nie posiada miejsca ".$miejsce."<br/>Miejsce o największym numerze to nr. ".$ilosc_miejsc_w_sali;
+if (!isset($_SESSION['wybrana'])){
+    header('Location: wybierz_ilosc.php');
+    exit();
+}
+if (isset($_POST['email'])){
+    $polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
+
+    if($polaczenie->connect_errno!=0){	
+        echo "Error: ".$polaczenie->connect_errno."Brak połączenia z bazą rezerwacji Kina";
+    }
+    else{
+        $rezerwacja_OK = true;
+        $ilosc_miejsc_rezerwowanych = $_SESSION['ilosc_miejsc_do_rezerwacji'];
+        $ilosc_miejsc_w_sali = $_SESSION['ilosc_miejsc_w_sali'];
+        $id_seans = $_SESSION['id_seans'];
+
+        for($i=0; $i<$ilosc_miejsc_rezerwowanych; $i=$i+1){
+            $miejsce = $_POST['miejsce'][$i];//gdzieś tu jest błąd w konwersji
+            $_SESSION['miejsce'][$i] = $_POST['miejsce'][$i];
+            $sqlREZ = "SELECT * FROM rezerwacje WHERE id_seans='$id_seans' AND miejsce='$miejsce'";
+            if ($rezultatREZ = @$polaczenie->query($sqlREZ)){
+                if (is_numeric($miejsce) == false){
+                    $_SESSION['e_czy_int'][$i] = "Miejsc musi być liczbą całkowitą";
+                    $wszystko_OK = false;
+                }
+                elseif (($miejsce<1)||($miejsce>$ilosc_miejsc_w_sali)){
+                    $_SESSION['e_wielkosc'][$i] = "Sala ".$_SESSION['id_sala']." nie posiada miejsca ".$miejsce."<br/>Miejsce o największym numerze to nr. ".$ilosc_miejsc_w_sali;
 						$rezerwacja_OK=false;
 					}
 					elseif(($rezultatREZ->num_rows)>0){
@@ -92,35 +95,66 @@ if(!isset($_SESSION['wybrana'])){
 	}
 ?>
 <!DOCTYPE HTML>
-<html lang="pl">
-<head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-	<title>Kup bilet - Takie Kino</title>
-</head>
+    <html lang="pl">
+        <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <title>Kup bilet - Takie Kino</title>
+        <link rel="stylesheet" href="css/styles.css">
+        </head>
 
-<body>
-
+        <body>
+        <section>
 <?php
-	$tytul=$_SESSION['tytul'];
-	$dzien=$_SESSION['dzien'];
-	$godzina=$_SESSION['godzina'];
-	$id_sala=$_SESSION['id_sala'];
-	$id_seans=$_SESSION['id_seans'];
-	$ilosc_miejsc=$_SESSION['ilosc_miejsc_w_sali'];
-	$wolne_miejsca=$_SESSION['ilosc_miejsc_wolnych'];
-	$ilosc_miejsc_rezerwowanych=$_SESSION['ilosc_miejsc_do_rezerwacji'];
-	echo "REZERWACJA BILETU NA SEANS: ".$tytul."<br/>";
+        $tytul = $_SESSION['tytul'];
+    $dzien = $_SESSION['dzien'];
+    $godzina = $_SESSION['godzina'];
+    $id_sala = $_SESSION['id_sala'];
+	$id_seans = $_SESSION['id_seans'];
+	$ilosc_miejsc = $_SESSION['ilosc_miejsc_w_sali'];
+	$wolne_miejsca = $_SESSION['ilosc_miejsc_wolnych'];
+	$ilosc_miejsc_rezerwowanych = $_SESSION['ilosc_miejsc_do_rezerwacji'];
+
+
+    echo "REZERWACJA BILETU NA SEANS: ".$tytul."<br/>";
 	echo "Data seansu: ".$dzien."<br/>";
 	echo "Godzina senasu: ".$godzina."<br/>";
 	echo "Sala: ".$id_sala."<br/>";
+    echo "<br/>";
+
+// Wizualizacja miejsc na sali
+$x = 0;
+echo "<table>";
+echo "<tr>";
+for ($i=0;$i<$ilosc_miejsc;$i=$i+1) {
+    if ($x == 22) {
+        echo "</tr>";
+        echo "<tr>";
+        $x = 0;
+    }
+    $place = $i+1;
+    if (isset($_SESSION['e_zajete'][$i])) {
+        echo "<td style=\"background-color:\#FF0000\"> $place </td>";
+    }
+    else {
+        echo "<td style=\"background-color:\#00FF00\"> $place </td>";
+    }
+
+    $x = $x + 1;
+}
+echo "</tr>";
+echo "</table>";
+echo "<br/>";
+
 	echo "WYBIERZ ".$ilosc_miejsc_rezerwowanych." MIEJSCA:";
-	?>
+echo "<br/>";
+?>
+
 	<form method="POST">
 	<?php
 	for($i=0;$i<$ilosc_miejsc_rezerwowanych;$i=$i+1){
 		?>
-		Miejsce <?php echo $i+1;?>: <input type="text" name="miejsce[]" /><br/>
+		Miejsce <?php echo $i+1;?>: <input type="text" name="miejsce[]" /><br/><br/>
 		<?php	
 		if(isset($_SESSION['e_wielkosc'][$i])){
 			echo '<div class="error">'.$_SESSION['e_wielkosc'][$i].'</div>';
@@ -135,7 +169,10 @@ if(!isset($_SESSION['wybrana'])){
 			unset($_SESSION['e_zajete'][$i]);
 		}
 	}
+echo "<br/>";
 	?>
+
+
 	E-mail: <br/><input type="text" name="email"/><br/>
 	<?php
 	if(isset($_SESSION['e_email'])){
@@ -156,5 +193,6 @@ if(!isset($_SESSION['wybrana'])){
 	</form>
 	<?php
 ?>
+        </section>
 </body>
 </html>

@@ -13,11 +13,14 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
 	<script type="text/javascript" src="calendar.js"></script>
 	<title>Panel administratora - Takie Kino</title>
+        <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
+        <section>
 <?php
 	echo"<p>Witaj w Panelu Administratora<br/>".'     [<a href="logout.php">Wyloguj się</a>]</p>';
+echo "<br/>";
 	$polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
 	if($polaczenie->connect_errno!=0){	
 			echo "Error: ".$polaczenie->connect_errno."Brak połączenia z bazą rezerwacji Kina";
@@ -38,6 +41,7 @@
 			Rodzaj(2D/3D): <br/><input type="text" name="rodzaj"/><br/>
 			<input type="submit" name="DODAJ_FILM" value='Dodaj'>
 			</form>
+            <br/>
 			<?php
 			if($polaczenie->connect_errno!=0){	
 				echo "Error: ".$polaczenie->connect_errno."Brak połączenia z bazą rezerwacji Kina";
@@ -375,5 +379,6 @@
 	$polaczenie->close();
 	}
 	?>
+</section>
 </body>
 </html>
