@@ -21,14 +21,13 @@ $polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
 		   }	
 		$rezultat->free_result();		   
         }
-		
-		$polaczenie->close();
+		//$polaczenie->close();
 	}
 
 	
 		
 if (isset($_POST['email'])){
-    $polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
+   // $polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
 
     if($polaczenie->connect_errno!=0){	
         echo "Error: ".$polaczenie->connect_errno."Brak połączenia z bazą rezerwacji Kina";
@@ -149,9 +148,11 @@ $x = 0;
 echo "<table>";
 echo "<tr>";
 
-    	for($i=0;$i<$ile;$i=$i+1){
+    	for($i=0;$i<$ilosc_miejsc;$i=$i+1){
 		if(isset($_SESSION['e_zajete'][$i+1])){ // <----------------- sprawdza czy zajete
-		echo $i+1;} // wyswietla numerek zajetego
+		echo "zajete".$i;} // wyswietla numerek zajetego{
+		else{ echo "wolne".$i;
+		}
 	}
 	
 for ($i=0;$i<$ilosc_miejsc;$i=$i+1) {
