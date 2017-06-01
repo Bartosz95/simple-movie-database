@@ -5,6 +5,28 @@ if (!isset($_SESSION['wybrana'])){
     header('Location: wybierz_ilosc.php');
     exit();
 }
+// do wyswietlania miejsc
+$polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
+    if($polaczenie->connect_errno!=0){	
+        echo "Error: ".$polaczenie->connect_errno."Brak połączenia z bazą rezerwacji Kina";
+    }else{
+		$id_seans = $_SESSION['id_seans'];
+		$sql = "SELECT * FROM rezerwacje WHERE id_seans='$id_seans'";
+       if($rezultat=@$polaczenie->query($sql)){
+		   $ile=$rezultat->num_rows;
+		   for($i=0;$i<$ile;$i=$i+1){
+			   $MIEJSCE=$rezultat->fetch_assoc();
+			   $_SESSION['e_zajete'][$MIEJSCE['miejsce']]=true;
+			   echo $MIEJSCE['miejsce'];
+		   }	
+		$rezultat->free_result();		   
+        }
+		
+		$polaczenie->close();
+	}
+
+	
+		
 if (isset($_POST['email'])){
     $polaczenie = @new mysqli($host,$db_user,$db_password,$db_name);
 
@@ -45,7 +67,7 @@ if (isset($_POST['email'])){
 			if((filter_var($emailB,FILTER_VALIDATE_EMAIL)==false)||($emailB!=$email)){
 				$rezerwacja_OK=false;
 				$_SESSION['e_email']="Podaj poprawny adres e-mail";
-			}
+			}$rezerwacja_OK=true;
 			if($rezerwacja_OK==true){
 				for($i=0;$i<$ilosc_miejsc_rezerwowanych;$i=$i+1){
 					$miejsce=$_POST['miejsce'][$i];
@@ -106,7 +128,7 @@ if (isset($_POST['email'])){
         <body>
         <section>
 <?php
-        $tytul = $_SESSION['tytul'];
+    $tytul = $_SESSION['tytul'];
     $dzien = $_SESSION['dzien'];
     $godzina = $_SESSION['godzina'];
     $id_sala = $_SESSION['id_sala'];
@@ -126,6 +148,12 @@ if (isset($_POST['email'])){
 $x = 0;
 echo "<table>";
 echo "<tr>";
+
+    	for($i=0;$i<$ile;$i=$i+1){
+		if(isset($_SESSION['e_zajete'][$i+1])){ // <----------------- sprawdza czy zajete
+		echo $i+1;} // wyswietla numerek zajetego
+	}
+	
 for ($i=0;$i<$ilosc_miejsc;$i=$i+1) {
     if ($x == 22) {
         echo "</tr>";
